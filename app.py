@@ -69,88 +69,66 @@ def process_and_reply(sender_id, message_text):
         character building, and behavior modification.
     """
 
-    # تجهيز الطلب لـ Groq
-    payload = {
+   payload = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": message_text},
+            {"role": "user", "content": message_text}
         ],
-        "temperature": 0.2,
+        "temperature": 0.2
     }
-
+    
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
     }
-
+    
     try:
-        response = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            json=payload,
-            headers=headers,
-        )
-
+        response = requests.post("https://api.groq.com/openai/v1/chat/completions", json=payload, headers=headers)
+        
         if response.status_code == 200:
-            bot_reply = response.json()["choices"][0]["message"]["content"]
-
-            fb_url = (
-                "https://graph.facebook.com/v21.0/me/messages"
-                f"?access_token={PAGE_ACCESS_TOKEN}"
-            )
+            bot_reply = response.json()['choices'][0]['message']['content']
+            
+            fb_url = f"https://graph.facebook.com/v21.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
             fb_payload = {
                 "recipient": {"id": sender_id},
-                "message": {"text": bot_reply},
+                "message": {"text": bot_reply}
             }
             requests.post(fb_url, json=fb_payload)
         else:
             print(f"Groq API Error: {response.text}")
-
+            
     except Exception as e:
-        print(f"Error in background processing: {e}")
-
+        print(f"Error in processing: {e}")
 
 # ==========================================
 # 3. مسارات السيرفر (Webhooks)
 # ==========================================
-
-
 @app.route('/webhook', methods=['GET'])
 def verify():
-    # التحقق من الباب لما فيسبوك يخبط أول مرة
-    if (request.args.get("hub.mode") == "subscribe" and
-            request.args.get("hub.challenge")):
+    if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.challenge"):
         if request.args.get("hub.verify_token") == VERIFY_TOKEN:
             return request.args.get("hub.challenge"), 200
         return "Verification token mismatch", 403
     return "Webhook is running!", 200
 
-
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
-
+    
     if data['object'] == 'page':
         for entry in data['entry']:
             for messaging_event in entry['messaging']:
                 if messaging_event.get('message'):
                     sender_id = messaging_event['sender']['id']
                     message_text = messaging_event['message'].get('text')
-
+                    
                     if message_text:
                         print(f"New message received from {sender_id}")
-
-                        # هنا السحر: بنفتح مسار فرعي (Thread)
-                        # يعالج الرسالة ويرد
-                        thread = threading.Thread(
-                            target=process_and_reply,
-                            args=(sender_id, message_text))
-                        thread.start()
-
-    # بنرد على فيسبوك فوراً عشان ميقلقش ويعمل Timeout
+                        # هنشغلها بشكل مباشر عشان Vercel ميموتش السيرفر
+                        process_and_reply(sender_id, message_text)
+                        
     return 'EVENT_RECEIVED', 200
-
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
-
