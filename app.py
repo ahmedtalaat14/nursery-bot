@@ -79,7 +79,7 @@ def get_ollama_response(user_message):
     - Security: Private on-site cameras (Not available for online viewing).
     - Location & Links:
         * Address: Obour City. Bus service covers all of Obour.
-        * Location Map Link: [حط لينك جوجل ماب هنا]
+        * Location Map Link: [https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8]
         * Official Website: [حط لينك الموقع هنا]
     - Services: 3 healthy meals daily, Potty training assistance.
     - Curriculum & Activities:
