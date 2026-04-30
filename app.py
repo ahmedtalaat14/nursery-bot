@@ -53,7 +53,7 @@ def process_and_reply(sender_id, message_text):
     - Communication: Daily reports and monthly evaluations are provided via our mobile app.
     - Staff & Curriculum: Highly trained and specialized teachers. International curriculum, Montessori, Gymnastics, Quran, and English conversation with foreigners.
     - Required Documents: Computerized birth certificate (شهادة ميلاد كمبيوتر), 3 personal photos of the child (٣ صور شخصية للطفل), and copies of both parents' National ID cards (صور البطاقة الشخصية للأب والأم).
-    - Holidays: Closed on all official state holidays. We also take a full week off for Eid Al-Fitr and Eid Al-Adha. This is because the nursery operates continuously for 12 months a year, and this week allows our foreign staff to travel and visit their families abroad.
+    - Holidays: Closed on all official state holidays. We also take a full week off for Eid Al-Fitr and Eid Al-Adha. Reason: The nursery operates continuously for 12 months a year, so this allows our support workers/nannies (العاملات) to travel to their home governorates within Egypt.
     - Location & Links:
         * Address: Obour City. Bus service covers all of Obour.
         * Location Map Link: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8
