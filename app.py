@@ -75,7 +75,7 @@ def get_ollama_response(user_message):
     - Attendance & Fees:
         * Half Day: 8:00 AM to 12:00 PM - 4000 EGP/month.
         * Full Day: 5500 EGP/month.
-        * Discount: 10% for City Club members.
+        * Discount: 10% for "City Club" members.
     - Security: Private on-site cameras (Not available for online viewing).
     - Location & Transport: Located in Obour City. (العبور الحى الأول محطة حليم فيلا ٨ بجوار مسجد مخلوف). Bus service covers all of Obour.
     - Services: 3 healthy meals daily, Potty training assistance.
