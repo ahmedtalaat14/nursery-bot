@@ -40,7 +40,7 @@ def process_and_reply(sender_id, message_text):
     - Age: 1 year and 10 months up to 5 years.
     - Fees: Half Day (8 AM-12 PM) 4000 EGP. Full Day 5500 EGP. 10% discount for City Club members. No trial period.
     - Services: 3 healthy meals daily. Potty training assistance.
-    - Payment: Cash or InstaPay (01111299025).
+    - Payment: Cash or InstaPay.
     - Health & Safety: No resident doctor. Parents contacted immediately for pick-up if a child is sick.
     - Security: Private cameras (not online). Pick-up by pre-registered people ONLY.
     - Communication & App: Parents can track their children via the "i care" mobile app. The app provides daily reports, monthly evaluations, and the monthly food menu.
