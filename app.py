@@ -47,13 +47,13 @@ def process_and_reply(sender_id, message_text):
         * Full Day: 5500 EGP/month.
         * Discount: 10% for City Club members.
         * Note: No trial period is available.
-    - Payment Methods: Cash or InstaPay (Phone/Bank Account: 01111299025).
+    - Payment Methods: Cash or InstaPay.
     - Health & Safety: No resident doctor. If a child falls ill, parents are contacted immediately for pick-up. For food allergies, parents must send an alternative meal.
     - Security & Pick-up: Private on-site cameras (Not available online). Children are handed over ONLY to pre-registered individuals.
     - Communication: Daily reports and monthly evaluations are provided via our mobile app.
     - Staff & Curriculum: Highly trained and specialized teachers. International curriculum, Montessori, Gymnastics, Quran, and English conversation with foreigners.
-    - Required Documents: Computerized birth certificate, 3 personal photos of the child, and copies of both parents' IDs.
-    - Holidays: Closed on all official state holidays, plus a full week off for Eid Al-Fitr and Eid Al-Adha (as the nursery operates 12 months a year).
+    - Required Documents: Computerized birth certificate, 3 personal photos of the child, and copies of both parents' National ID cards.
+    - Holidays: Closed on all official state holidays. We also take a full week off for Eid Al-Fitr and Eid Al-Adha. This is because the nursery operates continuously for 12 months a year, and this week allows our foreign staff to travel and visit their families abroad.
     - Location & Links:
         * Address: Obour City. Bus service covers all of Obour.
         * Location Map Link: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8
