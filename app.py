@@ -4,22 +4,17 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-
 # ==========================================
 # 1. إعدادات المفاتيح (Tokens & Keys)
 # ==========================================
-PAGE_ACCESS_TOKEN = (
-    "EAAg9SeLgAw0BReV3Ad1TuHHulZA3YkPgKsb8VyIhGyMNykZAmT0DKe8iAlniwMIcN6cdDhIvf6dyGI8jRWVgZBrufZC90MlcJsxNUhDzvRuqbJbEZBppySOgT6ns39Yvoyc9mByYh1ZBb6jTwMRt2GAeKC0Y96tRmXR1oC0mzYqreH4yafoL0paSgshPJ1KP80ZBPZBpcYpEc6WQOE2qjsV3vgZDZD"
-)
+PAGE_ACCESS_TOKEN = "EAAg9SeLgAw0BReV3Ad1TuHHulZA3YkPgKsb8VyIhGyMNykZAmT0DKe8iAlniwMIcN6cdDhIvf6dyGI8jRWVgZBrufZC90MlcJsxNUhDzvRuqbJbEZBppySOgT6ns39Yvoyc9mByYh1ZBb6jTwMRt2GAeKC0Y96tRmXR1oC0mzYqreH4yafoL0paSgshPJ1KP80ZBPZBpcYpEc6WQOE2qjsV3vgZDZD"
 VERIFY_TOKEN = "nursery123"
 # المفتاح السري بيتقرأ من Vercel بأمان
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 # ==========================================
-# 2. دالة التفكير والرد (بتشتغل في الخلفية)
+# 2. دالة التفكير والرد
 # ==========================================
-
-
 def process_and_reply(sender_id, message_text):
     system_prompt = """
     You are the professional and friendly AI assistant for
@@ -58,7 +53,7 @@ def process_and_reply(sender_id, message_text):
     - Security: Private on-site cameras (Not available for online viewing).
     - Location & Links:
         * Address: Obour City. Bus service covers all of Obour.
-        * Location Map Link: [https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8]
+        * Location Map Link: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8
         * Official Website: [ لينك الموقع ]
     - Services: 3 healthy meals daily, Potty training assistance.
     - Curriculum & Activities:
@@ -69,7 +64,8 @@ def process_and_reply(sender_id, message_text):
         character building, and behavior modification.
     """
 
-   payload = {
+    # تم تصليح المسافات هنا لتدخل ضمن الدالة
+    payload = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
             {"role": "system", "content": system_prompt},
@@ -77,7 +73,7 @@ def process_and_reply(sender_id, message_text):
         ],
         "temperature": 0.2
     }
-    
+
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
@@ -125,7 +121,6 @@ def webhook():
                     
                     if message_text:
                         print(f"New message received from {sender_id}")
-                        # هنشغلها بشكل مباشر عشان Vercel ميموتش السيرفر
                         process_and_reply(sender_id, message_text)
                         
     return 'EVENT_RECEIVED', 200
