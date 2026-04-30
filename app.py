@@ -64,7 +64,7 @@ def process_and_reply(sender_id, message_text):
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message_text}
         ],
-        "temperature": 0.2
+        "temperature": 0.4
     }
 
     headers = {
