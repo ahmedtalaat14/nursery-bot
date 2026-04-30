@@ -63,7 +63,7 @@ def get_ollama_response(user_message):
 
     CRITICAL RULES:
     1. LANGUAGE: Always reply in the same language the user uses. (Arabic for Arabic, English for English).
-    2. PROPER NOUNS: NEVER translate "City Club". Always write it as "سيتي كلوب" or "City Club". DO NOT say "نادي المدينة".
+    2. PROPER NOUNS: NEVER translate "City Club". Always write it as "City Club". DO NOT say "نادي المدينة".
     3. LINKS: If the user asks for the location, address, or wants to visit, you MUST include the Location Map Link. If they ask for more general info, include the Website Link.
     4. CONCISENESS: Do not provide information the user did not ask for. Be brief.
     5. EMOJIS: Use emojis sparingly (maximum 1 or 2 per message).
@@ -75,7 +75,7 @@ def get_ollama_response(user_message):
     - Attendance & Fees:
         * Half Day: 8:00 AM to 12:00 PM - 4000 EGP/month.
         * Full Day: 5500 EGP/month.
-        * Discount: 10% for "City Club" (سيتي كلوب) members.
+        * Discount: 10% for City Club members.
     - Security: Private on-site cameras (Not available for online viewing).
     - Location & Links:
         * Address: Obour City. Bus service covers all of Obour.
