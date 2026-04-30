@@ -52,7 +52,7 @@ def process_and_reply(sender_id, message_text):
     - Security & Pick-up: Private on-site cameras (Not available online). Children are handed over ONLY to pre-registered individuals.
     - Communication: Daily reports and monthly evaluations are provided via our mobile app.
     - Staff & Curriculum: Highly trained and specialized teachers. International curriculum, Montessori, Gymnastics, Quran, and English conversation with foreigners.
-    - Required Documents: Computerized birth certificate, 3 personal photos of the child, and copies of both parents' National ID cards.
+    - Required Documents: Computerized birth certificate (شهادة ميلاد كمبيوتر), 3 personal photos of the child (٣ صور شخصية للطفل), and copies of both parents' National ID cards (صور البطاقة الشخصية للأب والأم).
     - Holidays: Closed on all official state holidays. We also take a full week off for Eid Al-Fitr and Eid Al-Adha. This is because the nursery operates continuously for 12 months a year, and this week allows our foreign staff to travel and visit their families abroad.
     - Location & Links:
         * Address: Obour City. Bus service covers all of Obour.
