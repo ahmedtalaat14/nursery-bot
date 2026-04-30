@@ -86,7 +86,7 @@ def get_ollama_response(user_message):
     """
     
     # حط المفتاح بتاعك هنا بين علامات التنصيص
-    GROQ_API_KEY = os.environ("GROQ_API_KEY")
+    GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
     
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
