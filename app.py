@@ -77,7 +77,7 @@ def get_ollama_response(user_message):
         * Full Day: 5500 EGP/month.
         * Discount: 10% for City Club members.
     - Security: Private on-site cameras (Not available for online viewing).
-    - Location & Transport: Located in Obour City. Bus service covers all of Obour.
+    - Location & Transport: Located in Obour City. (العبور الحى الأول محطة حليم فيلا ٨ بجوار مسجد مخلوف). Bus service covers all of Obour.
     - Services: 3 healthy meals daily, Potty training assistance.
     - Curriculum & Activities:
         * International curriculum, Montessori sessions, Gymnastics, and Quran.
