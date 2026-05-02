@@ -43,6 +43,7 @@ def process_and_reply(sender_id, message_text):
     [2. Financials & Fees]
     - Subscriptions: Half Day (8 AM-12 PM) 4000 EGP. Full Day 5500 EGP.
     - Discounts: 10% for City Club members. 5% Sibling discount (خصم الإخوة).
+    - Payment: Cash or InstaPay.
     - Late Fees: Any delay after 4 PM costs 50 EGP for 1 hour, 150 EGP for 2 hours.
     - Absence: No refund or compensation for days missed by the child.
     - Refund Policy: If a child withdraws early, the app fee (300 EGP), uniform cost, and attended days are deducted, then the rest is refunded.
@@ -115,7 +116,6 @@ def process_and_reply(sender_id, message_text):
             
     except Exception as e:
         print(f"Error in processing: {e}")
-        
 # ==========================================
 # 3. مسارات السيرفر (Webhooks)
 # ==========================================
