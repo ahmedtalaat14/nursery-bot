@@ -38,6 +38,8 @@ def process_and_reply(sender_id, message_text):
     [1. General Info & Working Hours]
     - Experience & Age: 16 years experience. Accepts kids from 1 year and 10 months up to 5 years.
     - Working Days: Sunday to Thursday ONLY. (Friday & Saturday are off).
+    - working Hours: 8 AM to 4 PM.
+    - Holidays: Closed on all public holidays. 1 week off for Eid Al-Fitr and 1 week off for Eid Al-Adha.
     - Location & Links: Obour City. Map: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8 | Website: [ لينك الموقع ]
     - Summer Camp: Available for older kids (5 to 12 years old).
 
