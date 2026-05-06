@@ -4,17 +4,12 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-# ==========================================
-# 1. إعدادات المفاتيح (Tokens & Keys)
-# ==========================================
+
 PAGE_ACCESS_TOKEN = "EAAg9SeLgAw0BReV3Ad1TuHHulZA3YkPgKsb8VyIhGyMNykZAmT0DKe8iAlniwMIcN6cdDhIvf6dyGI8jRWVgZBrufZC90MlcJsxNUhDzvRuqbJbEZBppySOgT6ns39Yvoyc9mByYh1ZBb6jTwMRt2GAeKC0Y96tRmXR1oC0mzYqreH4yafoL0paSgshPJ1KP80ZBPZBpcYpEc6WQOE2qjsV3vgZDZD"
 VERIFY_TOKEN = "nursery123"
-# المفتاح السري بيتقرأ من Vercel بأمان
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
-# ==========================================
-# 2. دالة التفكير والرد
-# ==========================================
+
 def process_and_reply(sender_id, message_text):
     system_prompt = """
     You are the friendly, warm, and human-like customer service assistant for "Adam's & Elbaraa Nursery" (حضانة ادمز و البراء).
@@ -37,6 +32,9 @@ def process_and_reply(sender_id, message_text):
 
     [1. General Info & Working Hours]
     - Experience & Age: 16 years experience. Accepts kids from 1 year and 10 months up to 5 years.
+    - Teachers: Highly qualified and trained staff.
+    - Garden & Play Area: 200 square meters garden and play area.
+    - cameras: 24/7 CCTV coverage for safety and transparency (no online access).
     - Working Days: Sunday to Thursday ONLY. (Friday & Saturday are off).
     - working Hours: 8 AM to 4 PM.
     - Holidays: Closed on all public holidays. 1 week off for Eid Al-Fitr and 1 week off for Eid Al-Adha.
@@ -119,9 +117,8 @@ def process_and_reply(sender_id, message_text):
             
     except Exception as e:
         print(f"Error in processing: {e}")
-# ==========================================
-# 3. مسارات السيرفر (Webhooks)
-# ==========================================
+
+
 @app.route('/webhook', methods=['GET'])
 def verify():
     if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.challenge"):
@@ -146,6 +143,7 @@ def webhook():
                         process_and_reply(sender_id, message_text)
                         
     return 'EVENT_RECEIVED', 200
+
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
