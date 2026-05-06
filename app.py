@@ -31,6 +31,7 @@ def process_and_reply(sender_id, message_text):
        - Food/Meals & Allergies: ALWAYS reply exactly like this: "إحنا بنقدم ٣ وجبات صحية يومياً، وبينزل منيو شهري بالأكل على أبلكيشن (i care). لو الطفل عنده حساسية من أكل معين، حضرتك بتبلغينا، ولما تلاقي الأكل ده في المنيو في يوم معين، بتستأذنك تبعتي وجبة بديلة معاه في اليوم ده يا فندم."
     5. LINKS: Include Map Link for location questions, Website Link for website questions.
     6. CONCISENESS: Be brief, answer ONLY what was asked.
+    
 
     NURSERY KNOWLEDGE BASE:
 
