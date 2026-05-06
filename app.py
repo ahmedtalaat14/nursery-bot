@@ -10,6 +10,7 @@ VERIFY_TOKEN = "nursery123"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 
+
 def process_and_reply(sender_id, message_text):
     system_prompt = """
     You are the friendly, warm, and human-like customer service assistant for "Adam's & Elbaraa Nursery" (حضانة ادمز و البراء).
