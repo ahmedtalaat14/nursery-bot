@@ -4,13 +4,66 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-
 PAGE_ACCESS_TOKEN = "EAAg9SeLgAw0BReV3Ad1TuHHulZA3YkPgKsb8VyIhGyMNykZAmT0DKe8iAlniwMIcN6cdDhIvf6dyGI8jRWVgZBrufZC90MlcJsxNUhDzvRuqbJbEZBppySOgT6ns39Yvoyc9mByYh1ZBb6jTwMRt2GAeKC0Y96tRmXR1oC0mzYqreH4yafoL0paSgshPJ1KP80ZBPZBpcYpEc6WQOE2qjsV3vgZDZD"
 VERIFY_TOKEN = "nursery123"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 
+# ============================================================
+# إعداد رسالة الترحيب وزر ابدأ - اتشغل مرة واحدة بس
+# ============================================================
+def setup_messenger_profile():
+    url = f"https://graph.facebook.com/v21.0/me/messenger_profile?access_token={PAGE_ACCESS_TOKEN}"
+    
+    payload = {
+        "greeting": [
+            {
+                "locale": "default",
+                "text": "أهلاً وسهلاً في حضانة آدمز والبراء! 🌟 أنا هنا أساعدك في أي استفسار عن الحضانة. اضغط 'ابدأ' وهنرد عليك في الحال!"
+            },
+            {
+                "locale": "ar_AR", 
+                "text": "أهلاً وسهلاً في حضانة آدمز والبراء! 🌟 أنا هنا أساعدك في أي استفسار. اضغط 'ابدأ' وهنرد عليك دلوقتي!"
+            }
+        ],
+        "get_started": {
+            "payload": "GET_STARTED"
+        }
+    }
+    
+    response = requests.post(url, json=payload)
+    if response.status_code == 200:
+        print("✅ Messenger profile setup done!")
+    else:
+        print(f"❌ Messenger profile setup failed: {response.text}")
 
+
+# ============================================================
+# رسالة الترحيب اللي بتتبعت لما حد يضغط ابدأ
+# ============================================================
+def send_welcome_message(sender_id):
+    welcome_text = (
+        "أهلاً وسهلاً يا فندم! 🌟\n\n"
+        "أنا المساعد الآلي لحضانة آدمز والبراء.\n"
+        "هنا أقدر أساعد حضرتك في أي استفسار عن:\n\n"
+        "📚 المناهج والأنشطة\n"
+        "💰 الرسوم والاشتراكات\n"
+        "📍 الموقع والمواعيد\n"
+        "🍽️ الوجبات والرعاية اليومية\n\n"
+        "إيه اللي تحب تعرفه النهارده؟ 😊"
+    )
+    
+    fb_url = f"https://graph.facebook.com/v21.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
+    fb_payload = {
+        "recipient": {"id": sender_id},
+        "message": {"text": welcome_text}
+    }
+    requests.post(fb_url, json=fb_payload)
+
+
+# ============================================================
+# معالجة الرسائل والرد بالـ AI
+# ============================================================
 def process_and_reply(sender_id, message_text):
     system_prompt = """
     You are the friendly, warm, and human-like customer service assistant for "Adam's & Elbaraa Nursery" (حضانة ادمز و البراء).
@@ -24,7 +77,7 @@ def process_and_reply(sender_id, message_text):
        - Teachers: "إحنا عندنا مدرسين متخصصين ومدربين على أعلى مستوى يا فندم".
        - Holidays Reason: "عشان الحضانة شغالة ١٢ شهر متواصل، فبندي أسبوع إجازة في العيدين عشان ندي فرصة للعاملات يسافروا يعيدوا مع أسرهم في محافظاتهم".
        - Required Documents: "شهادة ميلاد كمبيوتر", "٣ صور شخصية للطفل", "صور البطاقة الشخصية للأب والأم".
-       - City Club : “لأعضاء سيتي كلوب”.
+       - City Club : "لأعضاء سيتي كلوب".
        - Food/Meals & Allergies: ALWAYS reply exactly like this: "إحنا بنقدم ٣ وجبات صحية يومياً، وبينزل منيو شهري بالأكل على أبلكيشن (i care). لو الطفل عنده حساسية من أكل معين، حضرتك بتبلغينا، ولما تلاقي الأكل ده في المنيو في يوم معين، بتستأذنك تبعتي وجبة بديلة معاه في اليوم ده يا فندم."
     5. LINKS: Include Map Link for location questions, Website Link for website questions.
     6. CONCISENESS IS KEY: NEVER give the whole knowledge base at once. If the user asks a general question like "نظام الحضانة" or "إيه الأخبار", reply with a brief 2-3 sentence overview and ask them what specific part they want to know about (Fees, Location, Curriculum, etc.).
@@ -131,6 +184,7 @@ def verify():
         return "Verification token mismatch", 403
     return "Webhook is running!", 200
 
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
@@ -138,10 +192,17 @@ def webhook():
     if data['object'] == 'page':
         for entry in data['entry']:
             for messaging_event in entry['messaging']:
-                if messaging_event.get('message'):
-                    sender_id = messaging_event['sender']['id']
+                sender_id = messaging_event['sender']['id']
+
+                # ✅ لو حد ضغط زر "ابدأ" أو بعت GET_STARTED postback
+                if messaging_event.get('postback'):
+                    payload = messaging_event['postback'].get('payload', '')
+                    if payload == 'GET_STARTED':
+                        send_welcome_message(sender_id)
+
+                # ✅ لو بعت رسالة عادية
+                elif messaging_event.get('message'):
                     message_text = messaging_event['message'].get('text')
-                    
                     if message_text:
                         print(f"New message received from {sender_id}")
                         process_and_reply(sender_id, message_text)
@@ -150,4 +211,6 @@ def webhook():
 
 
 if __name__ == '__main__':
+    # ✅ بيتشغل مرة واحدة لما السيرفر يبدأ عشان يضبط رسالة الترحيب
+    setup_messenger_profile()
     app.run(port=5000, debug=True)
