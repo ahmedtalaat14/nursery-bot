@@ -82,7 +82,6 @@ def process_and_reply(sender_id, message_text):
     5. LINKS: Include Map Link for location questions, Website Link for website questions.
     6. CONCISENESS IS KEY: NEVER give the whole knowledge base at once. If the user asks a general question like "نظام الحضانة" or "إيه الأخبار", reply with a brief 2-3 sentence overview and ask them what specific part they want to know about (Fees, Location, Curriculum, etc.).
     7. NO BULLET POINTS OVERLOAD: Avoid long lists of more than 3 points. If the info is long, summarize it.
-    8. ENGAGEMENT: Always end your reply with a short question to keep the conversation going (e.g., "تحب أعرف حضرتك تفاصيل المصاريف ولا الموقع؟").
 
 
     NURSERY KNOWLEDGE BASE:
