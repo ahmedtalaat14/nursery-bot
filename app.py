@@ -188,23 +188,23 @@ def verify():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
+    print(f"📩 Received: {data}")  # ← ضيف السطر ده
     
     if data['object'] == 'page':
         for entry in data['entry']:
             for messaging_event in entry['messaging']:
                 sender_id = messaging_event['sender']['id']
+                print(f"📌 Event: {messaging_event}")  # ← وده
 
-                # ✅ لو حد ضغط زر "ابدأ" أو بعت GET_STARTED postback
                 if messaging_event.get('postback'):
                     payload = messaging_event['postback'].get('payload', '')
+                    print(f"🔔 Postback payload: {payload}")  # ← وده
                     if payload == 'GET_STARTED':
                         send_welcome_message(sender_id)
 
-                # ✅ لو بعت رسالة عادية
                 elif messaging_event.get('message'):
                     message_text = messaging_event['message'].get('text')
                     if message_text:
-                        print(f"New message received from {sender_id}")
                         process_and_reply(sender_id, message_text)
                         
     return 'EVENT_RECEIVED', 200
