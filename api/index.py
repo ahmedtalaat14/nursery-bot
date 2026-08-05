@@ -1,22 +1,19 @@
 import os
 import httpx
-from fastapi import FastAPI, Request, Response, BackgroundTasks, Query
+from fastapi import FastAPI, Request, Response, Query
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="Nursery FB Messenger Bot")
+app = FastAPI()
 
-PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN")
-VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN")
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-GROQ_MODEL = os.environ.get("GROQ_MODEL")
+PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN", "")
+VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "nursery123")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
 
 
 async def send_fb_message(sender_id: str, text: str):
-    """
-    Sends a text message back to the user via Facebook Graph API asynchronously.
-    """
     if not PAGE_ACCESS_TOKEN:
         print("❌ PAGE_ACCESS_TOKEN is missing!")
         return
@@ -25,7 +22,7 @@ async def send_fb_message(sender_id: str, text: str):
     max_length = 2000
     chunks = [text[i:i + max_length] for i in range(0, len(text), max_length)]
     
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    async with httpx.AsyncClient(timeout=8.0) as client:
         for chunk in chunks:
             fb_payload = {
                 "recipient": {"id": sender_id},
@@ -34,19 +31,16 @@ async def send_fb_message(sender_id: str, text: str):
             try:
                 res = await client.post(fb_url, json=fb_payload)
                 if res.status_code != 200:
-                    print(f"❌ Error sending FB message ({res.status_code}): {res.text}")
+                    print(f"❌ FB Error ({res.status_code}): {res.text}")
                 else:
-                    print(f"✅ FB message sent successfully to {sender_id}")
+                    print(f"✅ FB message sent to {sender_id}")
             except Exception as e:
                 print(f"❌ Exception sending FB message: {e}")
 
 
 async def process_and_reply(sender_id: str, message_text: str):
-    """
-    Background Task: Calls Groq Async API and sends reply without blocking Webhook.
-    """
-    if not GROQ_API_KEY or GROQ_API_KEY == "your_groq_api_key_here":
-        print("❌ GROQ_API_KEY is not set!")
+    if not GROQ_API_KEY:
+        print("❌ GROQ_API_KEY missing!")
         await send_fb_message(
             sender_id,
             "أهلاً بحضرتك! 🌟 الخدمة قيد التحديث حالياً، يرجى التواصل مع إدارة الحضانة مباشرة لمساعدتك."
@@ -145,26 +139,21 @@ async def process_and_reply(sender_id: str, message_text: str):
         "Content-Type": "application/json"
     }
     
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    async with httpx.AsyncClient(timeout=8.0) as client:
         try:
             response = await client.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 json=payload,
                 headers=headers
             )
-            
             if response.status_code == 200:
                 res_json = response.json()
                 bot_reply = res_json['choices'][0]['message']['content']
                 await send_fb_message(sender_id, bot_reply)
             else:
-                print(f"❌ Groq API Error ({response.status_code}): {response.text}")
-                await send_fb_message(
-                    sender_id,
-                    "بعتذر لحضرتك جداً، حصل عطل فني بسيط. ممكن تحاول تبعت سؤالك مرة تانية؟"
-                )
+                print(f"❌ Groq Error ({response.status_code}): {response.text}")
         except Exception as e:
-            print(f"❌ Error processing with Groq: {e}")
+            print(f"❌ Error processing Groq: {e}")
 
 
 @app.get("/webhook")
@@ -173,9 +162,6 @@ async def verify(
     hub_challenge: str = Query(None, alias="hub.challenge"),
     hub_verify_token: str = Query(None, alias="hub.verify_token")
 ):
-    """
-    Facebook Webhook Verification Endpoint
-    """
     if hub_mode == "subscribe" and hub_challenge:
         if hub_verify_token == VERIFY_TOKEN:
             return Response(content=hub_challenge, status_code=200)
@@ -184,10 +170,7 @@ async def verify(
 
 
 @app.post("/webhook")
-async def webhook(request: Request, background_tasks: BackgroundTasks):
-    """
-    Main Webhook: Processes events in Background Tasks and responds immediately to FB.
-    """
+async def webhook(request: Request):
     try:
         data = await request.json()
     except Exception:
@@ -207,6 +190,7 @@ async def webhook(request: Request, background_tasks: BackgroundTasks):
 
                     message_text = message_data.get('text')
                     if message_text:
-                        background_tasks.add_task(process_and_reply, sender_id, message_text)
+                        # تنفيذ العمل مباشرة ينتظر الرد ثم ينتهي الـ Function في Vercel
+                        await process_and_reply(sender_id, message_text)
 
     return Response(content="EVENT_RECEIVED", status_code=200)
