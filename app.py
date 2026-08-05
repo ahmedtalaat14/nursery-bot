@@ -1,18 +1,56 @@
 import os
 import requests
 from flask import Flask, request
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
-PAGE_ACCESS_TOKEN = "EAAg9SeLgAw0BReV3Ad1TuHHulZA3YkPgKsb8VyIhGyMNykZAmT0DKe8iAlniwMIcN6cdDhIvf6dyGI8jRWVgZBrufZC90MlcJsxNUhDzvRuqbJbEZBppySOgT6ns39Yvoyc9mByYh1ZBb6jTwMRt2GAeKC0Y96tRmXR1oC0mzYqreH4yafoL0paSgshPJ1KP80ZBPZBpcYpEc6WQOE2qjsV3vgZDZD"
-VERIFY_TOKEN = "nursery123"
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN", "")
+VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "nursery123")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 
-# ============================================================
-# إعداد رسالة الترحيب وزر ابدأ - اتشغل مرة واحدة بس
-# ============================================================
+def send_fb_message(sender_id, text):
+    """
+    Sends a text message back to the user via Facebook Graph API.
+    Splits messages into chunks if they exceed Facebook's 2000 character limit.
+    """
+    if not PAGE_ACCESS_TOKEN:
+        print("❌ PAGE_ACCESS_TOKEN is missing!")
+        return
+
+    fb_url = f"https://graph.facebook.com/v21.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
+    max_length = 2000
+    
+    # Split text into chunks of at most 2000 characters
+    chunks = [text[i:i + max_length] for i in range(0, len(text), max_length)]
+    
+    for chunk in chunks:
+        fb_payload = {
+            "recipient": {"id": sender_id},
+            "message": {"text": chunk}
+        }
+        try:
+            res = requests.post(fb_url, json=fb_payload, timeout=10)
+            if res.status_code != 200:
+                print(f"❌ Error sending FB message ({res.status_code}): {res.text}")
+            else:
+                print(f"✅ FB message sent successfully to {sender_id}")
+        except Exception as e:
+            print(f"❌ Exception sending FB message: {e}")
+
+
 def setup_messenger_profile():
+    """
+    Sets up the Messenger profile greetings and Get Started button.
+    """
+    if not PAGE_ACCESS_TOKEN:
+        print("⚠️ PAGE_ACCESS_TOKEN not set, skipping messenger profile setup.")
+        return
+
     url = f"https://graph.facebook.com/v21.0/me/messenger_profile?access_token={PAGE_ACCESS_TOKEN}"
     
     payload = {
@@ -31,17 +69,20 @@ def setup_messenger_profile():
         }
     }
     
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        print("✅ Messenger profile setup done!")
-    else:
-        print(f"❌ Messenger profile setup failed: {response.text}")
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        if response.status_code == 200:
+            print("✅ Messenger profile setup done!")
+        else:
+            print(f"❌ Messenger profile setup failed: {response.text}")
+    except Exception as e:
+        print(f"❌ Exception in setup_messenger_profile: {e}")
 
 
-# ============================================================
-# رسالة الترحيب اللي بتتبعت لما حد يضغط ابدأ
-# ============================================================
 def send_welcome_message(sender_id):
+    """
+    Sends initial welcome message when the user clicks 'Get Started'.
+    """
     welcome_text = (
         "أهلاً وسهلاً يا فندم! 🌟\n\n"
         "أنا المساعد الآلي لحضانة آدمز والبراء.\n"
@@ -52,19 +93,21 @@ def send_welcome_message(sender_id):
         "🍽️ الوجبات والرعاية اليومية\n\n"
         "إيه اللي تحب تعرفه النهارده؟ 😊"
     )
-    
-    fb_url = f"https://graph.facebook.com/v21.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
-    fb_payload = {
-        "recipient": {"id": sender_id},
-        "message": {"text": welcome_text}
-    }
-    requests.post(fb_url, json=fb_payload)
+    send_fb_message(sender_id, welcome_text)
 
 
-# ============================================================
-# معالجة الرسائل والرد بالـ AI
-# ============================================================
 def process_and_reply(sender_id, message_text):
+    """
+    Sends parent inquiry to Groq AI and responds back on Facebook Messenger.
+    """
+    if not GROQ_API_KEY or GROQ_API_KEY == "your_groq_api_key_here":
+        print("❌ GROQ_API_KEY is not set or using placeholder in .env!")
+        send_fb_message(
+            sender_id,
+            "أهلاً بحضرتك! 🌟 الخدمة قيد التحديث حالياً، يرجى التواصل مع إدراة الحضانة مباشرة لمساعدتك."
+        )
+        return
+
     system_prompt = """
     You are the friendly, warm, and human-like customer service assistant for "Adam's & Elbaraa Nursery" (حضانة ادمز و البراء).
     
@@ -143,7 +186,7 @@ def process_and_reply(sender_id, message_text):
     """
 
     payload = {
-        "model": "openai/gpt-oss-120b",
+        "model": GROQ_MODEL,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message_text}
@@ -157,22 +200,30 @@ def process_and_reply(sender_id, message_text):
     }
     
     try:
-        response = requests.post("https://api.groq.com/openai/v1/chat/completions", json=payload, headers=headers)
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            json=payload,
+            headers=headers,
+            timeout=15
+        )
         
         if response.status_code == 200:
-            bot_reply = response.json()['choices'][0]['message']['content']
-            
-            fb_url = f"https://graph.facebook.com/v21.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
-            fb_payload = {
-                "recipient": {"id": sender_id},
-                "message": {"text": bot_reply}
-            }
-            requests.post(fb_url, json=fb_payload)
+            res_json = response.json()
+            bot_reply = res_json['choices'][0]['message']['content']
+            send_fb_message(sender_id, bot_reply)
         else:
-            print(f"Groq API Error: {response.text}")
+            print(f"❌ Groq API Error ({response.status_code}): {response.text}")
+            send_fb_message(
+                sender_id,
+                "بعتذر لحضرتك جداً، حصل عطل فني بسيط. ممكن تحاول تبعت سؤالك مرة تانية؟"
+            )
             
     except Exception as e:
-        print(f"Error in processing: {e}")
+        print(f"❌ Error in processing message with Groq: {e}")
+        send_fb_message(
+            sender_id,
+            "بعتذر لحضرتك، الخدمة غير متاحة حالياً. يرجى إعادة المحاولة لاحقاً."
+        )
 
 
 @app.route('/webhook', methods=['GET'])
@@ -186,23 +237,36 @@ def verify():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    data = request.get_json()
-    print(f"📩 Received: {data}")  # ← ضيف السطر ده
+    data = request.get_json(silent=True)
+    if not data:
+        print("⚠️ Received empty or invalid JSON payload")
+        return 'BAD_REQUEST', 400
+
+    print(f"📩 Received payload: {data}")
     
-    if data['object'] == 'page':
-        for entry in data['entry']:
-            for messaging_event in entry['messaging']:
-                sender_id = messaging_event['sender']['id']
-                print(f"📌 Event: {messaging_event}")  # ← وده
+    if isinstance(data, dict) and data.get('object') == 'page':
+        for entry in data.get('entry', []):
+            for messaging_event in entry.get('messaging', []):
+                sender_id = messaging_event.get('sender', {}).get('id')
+                if not sender_id:
+                    continue
+
+                print(f"📌 Messaging event: {messaging_event}")
 
                 if messaging_event.get('postback'):
                     payload = messaging_event['postback'].get('payload', '')
-                    print(f"🔔 Postback payload: {payload}")  # ← وده
+                    print(f"🔔 Postback payload: {payload}")
                     if payload == 'GET_STARTED':
                         send_welcome_message(sender_id)
 
                 elif messaging_event.get('message'):
-                    message_text = messaging_event['message'].get('text')
+                    message_data = messaging_event['message']
+                    # Skip echo messages (messages sent by the page itself)
+                    if message_data.get('is_echo'):
+                        print("ℹ️ Skipping page echo message")
+                        continue
+
+                    message_text = message_data.get('text')
                     if message_text:
                         process_and_reply(sender_id, message_text)
                         
@@ -210,6 +274,8 @@ def webhook():
 
 
 if __name__ == '__main__':
-    # ✅ بيتشغل مرة واحدة لما السيرفر يبدأ عشان يضبط رسالة الترحيب
-    setup_messenger_profile()
+    # Only run setup once on main startup (avoid duplicate execution under reloader)
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
+        setup_messenger_profile()
+        
     app.run(port=5000, debug=True)
