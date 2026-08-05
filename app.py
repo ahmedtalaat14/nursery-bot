@@ -1,22 +1,21 @@
 import os
-import requests
-from flask import Flask, request
+import httpx
+from fastapi import FastAPI, Request, Response, BackgroundTasks, Query
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+app = FastAPI(title="Nursery FB Messenger Bot")
 
-PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN", "")
-VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "nursery123")
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN")
+VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_MODEL = os.environ.get("GROQ_MODEL")
 
 
-def send_fb_message(sender_id, text):
+async def send_fb_message(sender_id: str, text: str):
     """
-    Sends a text message back to the user via Facebook Graph API.
-    Splits messages into chunks if they exceed Facebook's 2000 character limit.
+    Sends a text message back to the user via Facebook Graph API asynchronously.
     """
     if not PAGE_ACCESS_TOKEN:
         print("❌ PAGE_ACCESS_TOKEN is missing!")
@@ -24,87 +23,33 @@ def send_fb_message(sender_id, text):
 
     fb_url = f"https://graph.facebook.com/v21.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
     max_length = 2000
-    
-    # Split text into chunks of at most 2000 characters
     chunks = [text[i:i + max_length] for i in range(0, len(text), max_length)]
     
-    for chunk in chunks:
-        fb_payload = {
-            "recipient": {"id": sender_id},
-            "message": {"text": chunk}
-        }
-        try:
-            res = requests.post(fb_url, json=fb_payload, timeout=10)
-            if res.status_code != 200:
-                print(f"❌ Error sending FB message ({res.status_code}): {res.text}")
-            else:
-                print(f"✅ FB message sent successfully to {sender_id}")
-        except Exception as e:
-            print(f"❌ Exception sending FB message: {e}")
-
-
-def setup_messenger_profile():
-    """
-    Sets up the Messenger profile greetings and Get Started button.
-    """
-    if not PAGE_ACCESS_TOKEN:
-        print("⚠️ PAGE_ACCESS_TOKEN not set, skipping messenger profile setup.")
-        return
-
-    url = f"https://graph.facebook.com/v21.0/me/messenger_profile?access_token={PAGE_ACCESS_TOKEN}"
-    
-    payload = {
-        "greeting": [
-            {
-                "locale": "default",
-                "text": "أهلاً وسهلاً في حضانة آدمز والبراء! 🌟 أنا هنا أساعدك في أي استفسار عن الحضانة. اضغط 'ابدأ' وهنرد عليك في الحال!"
-            },
-            {
-                "locale": "ar_AR", 
-                "text": "أهلاً وسهلاً في حضانة آدمز والبراء! 🌟 أنا هنا أساعدك في أي استفسار. اضغط 'ابدأ' وهنرد عليك دلوقتي!"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for chunk in chunks:
+            fb_payload = {
+                "recipient": {"id": sender_id},
+                "message": {"text": chunk}
             }
-        ],
-        "get_started": {
-            "payload": "GET_STARTED"
-        }
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=10)
-        if response.status_code == 200:
-            print("✅ Messenger profile setup done!")
-        else:
-            print(f"❌ Messenger profile setup failed: {response.text}")
-    except Exception as e:
-        print(f"❌ Exception in setup_messenger_profile: {e}")
+            try:
+                res = await client.post(fb_url, json=fb_payload)
+                if res.status_code != 200:
+                    print(f"❌ Error sending FB message ({res.status_code}): {res.text}")
+                else:
+                    print(f"✅ FB message sent successfully to {sender_id}")
+            except Exception as e:
+                print(f"❌ Exception sending FB message: {e}")
 
 
-def send_welcome_message(sender_id):
+async def process_and_reply(sender_id: str, message_text: str):
     """
-    Sends initial welcome message when the user clicks 'Get Started'.
-    """
-    welcome_text = (
-        "أهلاً وسهلاً يا فندم! 🌟\n\n"
-        "أنا المساعد الآلي لحضانة آدمز والبراء.\n"
-        "هنا أقدر أساعد حضرتك في أي استفسار عن:\n\n"
-        "📚 المناهج والأنشطة\n"
-        "💰 الرسوم والاشتراكات\n"
-        "📍 الموقع والمواعيد\n"
-        "🍽️ الوجبات والرعاية اليومية\n\n"
-        "إيه اللي تحب تعرفه النهارده؟ 😊"
-    )
-    send_fb_message(sender_id, welcome_text)
-
-
-def process_and_reply(sender_id, message_text):
-    """
-    Sends parent inquiry to Groq AI and responds back on Facebook Messenger.
+    Background Task: Calls Groq Async API and sends reply without blocking Webhook.
     """
     if not GROQ_API_KEY or GROQ_API_KEY == "your_groq_api_key_here":
-        print("❌ GROQ_API_KEY is not set or using placeholder in .env!")
-        send_fb_message(
+        print("❌ GROQ_API_KEY is not set!")
+        await send_fb_message(
             sender_id,
-            "أهلاً بحضرتك! 🌟 الخدمة قيد التحديث حالياً، يرجى التواصل مع إدراة الحضانة مباشرة لمساعدتك."
+            "أهلاً بحضرتك! 🌟 الخدمة قيد التحديث حالياً، يرجى التواصل مع إدارة الحضانة مباشرة لمساعدتك."
         )
         return
 
@@ -185,13 +130,14 @@ def process_and_reply(sender_id, message_text):
     - Emergency Pickup (استلام طوارئ): If parents cannot pick up the child, they MUST notify management and send a picture of the recipient's National ID card (صورة البطاقة الشخصية) via WhatsApp before the child is handed over.
     """
 
+
     payload = {
         "model": GROQ_MODEL,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message_text}
         ],
-        "temperature": 0.4
+        "temperature": 0.3
     }
 
     headers = {
@@ -199,51 +145,54 @@ def process_and_reply(sender_id, message_text):
         "Content-Type": "application/json"
     }
     
-    try:
-        response = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            json=payload,
-            headers=headers,
-            timeout=15
-        )
-        
-        if response.status_code == 200:
-            res_json = response.json()
-            bot_reply = res_json['choices'][0]['message']['content']
-            send_fb_message(sender_id, bot_reply)
-        else:
-            print(f"❌ Groq API Error ({response.status_code}): {response.text}")
-            send_fb_message(
-                sender_id,
-                "بعتذر لحضرتك جداً، حصل عطل فني بسيط. ممكن تحاول تبعت سؤالك مرة تانية؟"
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        try:
+            response = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                json=payload,
+                headers=headers
             )
             
-    except Exception as e:
-        print(f"❌ Error in processing message with Groq: {e}")
-        send_fb_message(
-            sender_id,
-            "بعتذر لحضرتك، الخدمة غير متاحة حالياً. يرجى إعادة المحاولة لاحقاً."
-        )
+            if response.status_code == 200:
+                res_json = response.json()
+                bot_reply = res_json['choices'][0]['message']['content']
+                await send_fb_message(sender_id, bot_reply)
+            else:
+                print(f"❌ Groq API Error ({response.status_code}): {response.text}")
+                await send_fb_message(
+                    sender_id,
+                    "بعتذر لحضرتك جداً، حصل عطل فني بسيط. ممكن تحاول تبعت سؤالك مرة تانية؟"
+                )
+        except Exception as e:
+            print(f"❌ Error processing with Groq: {e}")
 
 
-@app.route('/webhook', methods=['GET'])
-def verify():
-    if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.challenge"):
-        if request.args.get("hub.verify_token") == VERIFY_TOKEN:
-            return request.args.get("hub.challenge"), 200
-        return "Verification token mismatch", 403
-    return "Webhook is running!", 200
+@app.get("/webhook")
+async def verify(
+    hub_mode: str = Query(None, alias="hub.mode"),
+    hub_challenge: str = Query(None, alias="hub.challenge"),
+    hub_verify_token: str = Query(None, alias="hub.verify_token")
+):
+    """
+    Facebook Webhook Verification Endpoint
+    """
+    if hub_mode == "subscribe" and hub_challenge:
+        if hub_verify_token == VERIFY_TOKEN:
+            return Response(content=hub_challenge, status_code=200)
+        return Response(content="Verification token mismatch", status_code=403)
+    return Response(content="Webhook is running!", status_code=200)
 
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    data = request.get_json(silent=True)
-    if not data:
-        print("⚠️ Received empty or invalid JSON payload")
-        return 'BAD_REQUEST', 400
+@app.post("/webhook")
+async def webhook(request: Request, background_tasks: BackgroundTasks):
+    """
+    Main Webhook: Processes events in Background Tasks and responds immediately to FB.
+    """
+    try:
+        data = await request.json()
+    except Exception:
+        return Response(content="BAD_REQUEST", status_code=400)
 
-    print(f"📩 Received payload: {data}")
-    
     if isinstance(data, dict) and data.get('object') == 'page':
         for entry in data.get('entry', []):
             for messaging_event in entry.get('messaging', []):
@@ -251,31 +200,13 @@ def webhook():
                 if not sender_id:
                     continue
 
-                print(f"📌 Messaging event: {messaging_event}")
-
-                if messaging_event.get('postback'):
-                    payload = messaging_event['postback'].get('payload', '')
-                    print(f"🔔 Postback payload: {payload}")
-                    if payload == 'GET_STARTED':
-                        send_welcome_message(sender_id)
-
-                elif messaging_event.get('message'):
+                if messaging_event.get('message'):
                     message_data = messaging_event['message']
-                    # Skip echo messages (messages sent by the page itself)
                     if message_data.get('is_echo'):
-                        print("ℹ️ Skipping page echo message")
                         continue
 
                     message_text = message_data.get('text')
                     if message_text:
-                        process_and_reply(sender_id, message_text)
-                        
-    return 'EVENT_RECEIVED', 200
+                        background_tasks.add_task(process_and_reply, sender_id, message_text)
 
-
-if __name__ == '__main__':
-    # Only run setup once on main startup (avoid duplicate execution under reloader)
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
-        setup_messenger_profile()
-        
-    app.run(port=5000, debug=True)
+    return Response(content="EVENT_RECEIVED", status_code=200)
