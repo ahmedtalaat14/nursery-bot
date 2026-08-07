@@ -152,8 +152,8 @@ NURSERY KNOWLEDGE BASE:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message_text}
         ],
-        "temperature": 0.2,
-        "max_tokens": 120
+        "temperature": 0.3,
+        "max_tokens": 500
     }
 
     headers = {
