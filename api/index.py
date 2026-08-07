@@ -148,7 +148,8 @@ async def process_and_reply(sender_id: str, message_text: str):
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message_text}
         ],
-        "temperature": 0.3
+        "temperature": 0.3,
+        "max_tokens": 100
     }
 
     headers = {
@@ -207,7 +208,6 @@ async def webhook(request: Request):
 
                     message_text = message_data.get('text')
                     if message_text:
-                        # تنفيذ العمل مباشرة ينتظر الرد ثم ينتهي الـ Function في Vercel
                         await process_and_reply(sender_id, message_text)
 
     return Response(content="EVENT_RECEIVED", status_code=200)
