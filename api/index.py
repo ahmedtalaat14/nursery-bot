@@ -117,7 +117,7 @@ NURSERY KNOWLEDGE BASE:
 [4. Daily Care & Routine]
 - Nap Time: Only for 2-year-olds, supervised by class teachers.
 - Daily Bag Needs: Diapers, full change of clothes (غيار كامل), water flask.
-- Potty Training: Coordinated step-by-step with management.
+- Potty Training (تدريب علي البوتي): Coordinated step-by-step with management.
 - Transition (أول يوم): "Safe separation" (انفصال آمن) over one week coordinated with parents.
 
 [5. Education & Activities]
