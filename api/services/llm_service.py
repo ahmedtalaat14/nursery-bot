@@ -1,15 +1,32 @@
+import random
 import httpx
 from api.config import GROQ_API_KEY, GROQ_MODEL
 from api.prompts import SYSTEM_PROMPT
 from api.services.redis_service import get_user_history, save_user_history
 from api.services.facebook_service import send_fb_message
 
-
 async def process_and_reply(sender_id: str, message_text: str):
     """Processes user query through Groq LLM API and replies on Facebook."""
     if not GROQ_API_KEY:
         print("❌ GROQ_API_KEY missing!")
         await send_fb_message(sender_id, "بعتذر لحضرتك، الخدمة غير متاحة حالياً. يرجى التواصل معنا لاحقاً يا فندم.")
+        return
+
+    # 🌟 اعتراض ضغطة Get Started وإرسال الأزرار السريعة مباشرة
+    if message_text.strip().lower() in ["get started", "get_started_payload", "بدء الاستخدام"]:
+        welcome_text = "وعليكم السلام ورحمة الله وبركاته! أهلاً بحضرتك في حضانة آدمز والبراء 🌟 إزاي أقدر أساعدك النهاردة؟"
+        
+        buttons = [
+            {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
+            {"content_type": "text", "title": "المصاريف 💰", "payload": "المصاريف كام؟"},
+            {"content_type": "text", "title": "مواعيد الزيارة 📅", "payload": "ايه هي مواعيد الزيارة؟"}
+        ]
+        
+        await send_fb_message(sender_id, welcome_text, quick_replies=buttons)
+        
+        messages = get_user_history(sender_id)
+        messages.append({"role": "assistant", "content": welcome_text})
+        save_user_history(sender_id, messages)
         return
 
     # 1. Safely load chat history
@@ -22,7 +39,7 @@ async def process_and_reply(sender_id: str, message_text: str):
     payload = {
         "model": GROQ_MODEL,
         "messages": groq_messages,
-        "temperature": 0.3,
+        "temperature": 0.1,  # 🌟 تم التقليل لمنع التأليف تماماً
         "max_tokens": 500
     }
 
@@ -45,7 +62,26 @@ async def process_and_reply(sender_id: str, message_text: str):
                     bot_reply = choices[0]['message'].get('content', '')
                     if bot_reply and bot_reply.strip():
                         bot_reply = bot_reply.strip()
-                        await send_fb_message(sender_id, bot_reply)
+                        
+                        # 🌟 بنك الأسئلة الشاملة واستبعاد السؤال الحالي
+                        all_suggested_buttons = [
+                            {"content_type": "text", "title": "المنهج والأنشطة 🎨", "payload": "المنهج بتاعكم إيه؟"},
+                            {"content_type": "text", "title": "المصاريف 💰", "payload": "المصاريف كام؟"},
+                            {"content_type": "text", "title": "مواعيد الزيارة 📅", "payload": "ايه هي مواعيد الزيارة؟"},
+                            {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
+                            {"content_type": "text", "title": "سن القبول 👶", "payload": "بتاخدوا من سن كام؟"},
+                            {"content_type": "text", "title": "مكانكم فين؟ 📍", "payload": "مكان الحضانة فين؟"}
+                        ]
+
+                        filtered_buttons = [
+                            btn for btn in all_suggested_buttons 
+                            if btn["payload"] != message_text.strip()
+                        ]
+
+                        dynamic_buttons = random.sample(filtered_buttons, 3)
+
+                        # إرسال رد الموديل ومرفق معاه الأزرار المتغيرة
+                        await send_fb_message(sender_id, bot_reply, quick_replies=dynamic_buttons)
 
                         # Update conversation history
                         messages.append({"role": "user", "content": message_text})
