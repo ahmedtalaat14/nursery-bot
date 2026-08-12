@@ -5,6 +5,7 @@ from api.prompts import SYSTEM_PROMPT
 from api.services.redis_service import get_user_history, save_user_history
 from api.services.facebook_service import send_fb_message
 
+
 async def process_and_reply(sender_id: str, message_text: str):
     """Processes user query through Groq LLM API and replies on Facebook."""
     if not GROQ_API_KEY:
@@ -12,18 +13,19 @@ async def process_and_reply(sender_id: str, message_text: str):
         await send_fb_message(sender_id, "بعتذر لحضرتك، الخدمة غير متاحة حالياً. يرجى التواصل معنا لاحقاً يا فندم.")
         return
 
-    # 🌟 اعتراض ضغطة Get Started وإرسال الأزرار السريعة مباشرة
-    if message_text.strip().lower() in ["get started", "get_started_payload", "بدء الاستخدام"]:
+    # 🌟 Intercept Get Started / Initial greeting and send quick reply buttons
+    clean_msg = message_text.strip().lower()
+    if clean_msg in ["get started", "get_started_payload", "بدء الاستخدام"]:
         welcome_text = "وعليكم السلام ورحمة الله وبركاته! أهلاً بحضرتك في حضانة آدمز والبراء 🌟 إزاي أقدر أساعدك النهاردة؟"
-        
+
         buttons = [
             {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
             {"content_type": "text", "title": "المصاريف 💰", "payload": "المصاريف كام؟"},
             {"content_type": "text", "title": "مواعيد الزيارة 📅", "payload": "ايه هي مواعيد الزيارة؟"}
         ]
-        
+
         await send_fb_message(sender_id, welcome_text, quick_replies=buttons)
-        
+
         messages = get_user_history(sender_id)
         messages.append({"role": "assistant", "content": welcome_text})
         save_user_history(sender_id, messages)
@@ -39,7 +41,7 @@ async def process_and_reply(sender_id: str, message_text: str):
     payload = {
         "model": GROQ_MODEL,
         "messages": groq_messages,
-        "temperature": 0.1,  # 🌟 تم التقليل لمنع التأليف تماماً
+        "temperature": 0.1,
         "max_tokens": 500
     }
 
@@ -62,7 +64,7 @@ async def process_and_reply(sender_id: str, message_text: str):
                     bot_reply = choices[0]['message'].get('content', '')
                     if bot_reply and bot_reply.strip():
                         bot_reply = bot_reply.strip()
-                        
+
                         all_suggested_buttons = [
                             {"content_type": "text", "title": "المنهج والأنشطة 🎨", "payload": "المنهج بتاعكم إيه؟"},
                             {"content_type": "text", "title": "المصاريف 💰", "payload": "المصاريف كام؟"},
@@ -70,18 +72,16 @@ async def process_and_reply(sender_id: str, message_text: str):
                             {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
                             {"content_type": "text", "title": "سن القبول 👶", "payload": "بتاخدوا من سن كام؟"},
                             {"content_type": "text", "title": "مكانكم فين؟ 📍", "payload": "مكان الحضانة فين؟"},
-                            {"content_type": "text", "title": "الوجبات 🍽️", "payload": "الوجبات كام؟"}،
-                            {"content_type": "text", "title": "الباص ", "payload": "  الباص متاح؟"},
-
-
+                            {"content_type": "text", "title": "الوجبات 🍽️", "payload": "نظام الوجبات إيه؟"},
+                            {"content_type": "text", "title": "الباص 🚌", "payload": "الباص متاح؟"}
                         ]
 
                         filtered_buttons = [
-                            btn for btn in all_suggested_buttons 
+                            btn for btn in all_suggested_buttons
                             if btn["payload"] != message_text.strip()
                         ]
 
-                        dynamic_buttons = random.sample(filtered_buttons, 3)
+                        dynamic_buttons = random.sample(filtered_buttons, min(3, len(filtered_buttons)))
 
                         await send_fb_message(sender_id, bot_reply, quick_replies=dynamic_buttons)
 
