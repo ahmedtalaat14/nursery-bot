@@ -58,7 +58,7 @@ def save_user_history(sender_id: str, messages: list):
         print(f"⚠️ Redis set error for {sender_id}: {e}")
 
 
-async def send_fb_message(sender_id: str, text: str):
+async def send_fb_message(sender_id: str, text: str, quick_replies: list = None):
     """Sends a message back to user via Facebook Messenger Graph API."""
     if not text:
         return
@@ -72,11 +72,16 @@ async def send_fb_message(sender_id: str, text: str):
     chunks = [text[i:i + max_length] for i in range(0, len(text), max_length)]
 
     async with httpx.AsyncClient(timeout=10.0) as client:
-        for chunk in chunks:
+        for i, chunk in enumerate(chunks):
             fb_payload = {
                 "recipient": {"id": sender_id},
                 "message": {"text": chunk}
             }
+            
+            # إضافة الأزرار لآخر جزء من الرسالة فقط
+            if quick_replies and i == len(chunks) - 1:
+                fb_payload["message"]["quick_replies"] = quick_replies
+
             try:
                 res = await client.post(fb_url, json=fb_payload)
                 if res.status_code != 200:
@@ -94,11 +99,29 @@ async def process_and_reply(sender_id: str, message_text: str):
         await send_fb_message(sender_id, "بعتذر لحضرتك، الخدمة غير متاحة حالياً. يرجى التواصل معنا لاحقاً يا فندم.")
         return
 
+    # 🌟 اعتراض ضغطة Get Started وإرسال الأزرار السريعة مباشرة
     if message_text.strip().lower() in ["get started", "get_started_payload", "بدء الاستخدام"]:
-        message_text = "السلام عليكم"
+        welcome_text = "وعليكم السلام ورحمة الله وبركاته! أهلاً بحضرتك في حضانة آدمز والبراء 🌟 إزاي أقدر أساعدك النهاردة؟"
+        
+        # الأزرار السريعة (لاحظ إن العناوين لازم تكون قصيرة - أقصى حد 20 حرف)
+        buttons = [
+            {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
+            {"content_type": "text", "title": "المصاريف 💰", "payload": "المصاريف كام؟"},
+            {"content_type": "text", "title": "مواعيد الزيارة 📅", "payload": "ايه هي مواعيد الزيارة؟"}
+        ]
+        
+        await send_fb_message(sender_id, welcome_text, quick_replies=buttons)
+        
+        # تحديث الذاكرة عشان الموديل يكون عارف إنه سلم على العميل
+        messages = get_user_history(sender_id)
+        messages.append({"role": "assistant", "content": welcome_text})
+        save_user_history(sender_id, messages)
+        return # وقف التنفيذ هنا عشان مايبعتش الرسالة لـ Groq
 
     # 1. Safely load chat history
     messages = get_user_history(sender_id)
+    
+    # ... (كمل باقي دالة process_and_reply زي ما هي من أول الـ system_prompt لحد الآخر) ...
 
     system_prompt = """
 You are the warm, natural, and helpful Egyptian customer service assistant for "Adam's & Elbaraa Nursery" (حضانة آدمز والبراء).
