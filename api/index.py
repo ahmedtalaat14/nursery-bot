@@ -259,15 +259,30 @@ NURSERY KNOWLEDGE BASE:
                         bot_reply = bot_reply.strip()
                         
                         # 🌟 الأزرار الدائمة اللي هتظهر مع كل إجابة يقدمها البوت
-                        always_on_buttons = [
+                        import random  # استدعاء مكتبة العشوائية
+
+                        # 🌟 بنك الأسئلة الشاملة (6 أسئلة مختلفة)
+                        all_suggested_buttons = [
                             {"content_type": "text", "title": "المنهج والأنشطة 🎨", "payload": "المنهج بتاعكم إيه؟"},
                             {"content_type": "text", "title": "المصاريف 💰", "payload": "المصاريف كام؟"},
-                            {"content_type": "text", "title": "مواعيد الزيارة 📅", "payload": "ايه هي مواعيد الزيارة؟"}
+                            {"content_type": "text", "title": "مواعيد الزيارة 📅", "payload": "ايه هي مواعيد الزيارة؟"},
+                            {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
+                            {"content_type": "text", "title": "سن القبول 👶", "payload": "بتاخدوا من سن كام؟"},
+                            {"content_type": "text", "title": "مكانكم فين؟ 📍", "payload": "مكان الحضانة فين؟"}
                         ]
 
-                        # إرسال رد الموديل ومرفق معاه الأزرار دائماً
-                        await send_fb_message(sender_id, bot_reply, quick_replies=always_on_buttons)
+                        # 🌟 فلترة الأسئلة: استبعاد السؤال اللي العميل لسه سائله حالاً
+                        filtered_buttons = [
+                            btn for btn in all_suggested_buttons 
+                            if btn["payload"] != message_text.strip()
+                        ]
 
+                        # 🌟 اختيار 3 أسئلة عشوائية من الأسئلة المتبقية
+                        dynamic_buttons = random.sample(filtered_buttons, 3)
+
+                        # إرسال رد الموديل ومرفق معاه الأزرار المتغيرة
+                        await send_fb_message(sender_id, bot_reply, quick_replies=dynamic_buttons)
+                        
                         # Update conversation history
                         messages.append({"role": "user", "content": message_text})
                         messages.append({"role": "assistant", "content": bot_reply})
