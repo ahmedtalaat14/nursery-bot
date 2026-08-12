@@ -3,4 +3,3 @@ uvicorn
 httpx
 python-dotenv
 upstash-redis
-json
