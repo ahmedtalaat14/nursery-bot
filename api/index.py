@@ -94,6 +94,9 @@ async def process_and_reply(sender_id: str, message_text: str):
         await send_fb_message(sender_id, "بعتذر لحضرتك، الخدمة غير متاحة حالياً. يرجى التواصل معنا لاحقاً يا فندم.")
         return
 
+    if message_text.strip().lower() in ["get started", "get_started_payload", "بدء الاستخدام"]:
+        message_text = "السلام عليكم"
+
     # 1. Safely load chat history
     messages = get_user_history(sender_id)
 
