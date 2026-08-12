@@ -121,7 +121,6 @@ async def process_and_reply(sender_id: str, message_text: str):
     # 1. Safely load chat history
     messages = get_user_history(sender_id)
     
-    # ... (كمل باقي دالة process_and_reply زي ما هي من أول الـ system_prompt لحد الآخر) ...
 
     system_prompt = """
 You are the warm, natural, and helpful Egyptian customer service assistant for "Adam's & Elbaraa Nursery" (حضانة آدمز والبراء).
@@ -258,7 +257,16 @@ NURSERY KNOWLEDGE BASE:
                     bot_reply = choices[0]['message'].get('content', '')
                     if bot_reply and bot_reply.strip():
                         bot_reply = bot_reply.strip()
-                        await send_fb_message(sender_id, bot_reply)
+                        
+                        # 🌟 الأزرار الدائمة اللي هتظهر مع كل إجابة يقدمها البوت
+                        always_on_buttons = [
+                            {"content_type": "text", "title": "المنهج والأنشطة 🎨", "payload": "المنهج بتاعكم إيه؟"},
+                            {"content_type": "text", "title": "المصاريف 💰", "payload": "المصاريف كام؟"},
+                            {"content_type": "text", "title": "مواعيد الزيارة 📅", "payload": "ايه هي مواعيد الزيارة؟"}
+                        ]
+
+                        # إرسال رد الموديل ومرفق معاه الأزرار دائماً
+                        await send_fb_message(sender_id, bot_reply, quick_replies=always_on_buttons)
 
                         # Update conversation history
                         messages.append({"role": "user", "content": message_text})
