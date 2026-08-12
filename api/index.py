@@ -212,7 +212,7 @@ NURSERY KNOWLEDGE BASE:
     payload = {
         "model": GROQ_MODEL,
         "messages": groq_messages,
-        "temperature": 0.3,
+        "temperature": 0.2,
         "max_tokens": 500
     }
 
@@ -254,6 +254,47 @@ NURSERY KNOWLEDGE BASE:
             print(f"❌ Exception processing Groq: {e}")
             await send_fb_message(sender_id, "بعتذر لحضرتك جداً، حدث خطأ مؤقت. تقدر تسألني تاني يا فندم.")
 
+
+@app.get("/setup-menu")
+async def setup_messenger_menu():
+    """Endpoint to setup Facebook Messenger Persistent Menu and Get Started button."""
+    if not PAGE_ACCESS_TOKEN:
+        return {"error": "PAGE_ACCESS_TOKEN is missing"}
+
+    url = f"https://graph.facebook.com/v21.0/me/messenger_profile?access_token={PAGE_ACCESS_TOKEN}"
+    
+    payload = {
+        "get_started": {
+            "payload": "get_started_payload"
+        },
+        "persistent_menu": [
+            {
+                "locale": "default",
+                "composer_input_disabled": False,
+                "call_to_actions": [
+                    {
+                        "type": "postback",
+                        "title": "مواعيد العمل 🕒",
+                        "payload": "عايز اعرف مواعيد العمل"
+                    },
+                    {
+                        "type": "postback",
+                        "title": "المصاريف والاشتراكات 💰",
+                        "payload": "المصاريف كام؟"
+                    },
+                    {
+                        "type": "postback",
+                        "title": "مواعيد وحجز الزيارة 📅",
+                        "payload": "ايه هي مواعيد الزيارة؟"
+                    }
+                ]
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload)
+        return {"status": response.status_code, "response": response.json()}
 
 @app.get("/")
 async def root():
