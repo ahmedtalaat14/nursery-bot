@@ -63,7 +63,6 @@ async def process_and_reply(sender_id: str, message_text: str):
                     if bot_reply and bot_reply.strip():
                         bot_reply = bot_reply.strip()
                         
-                        # 🌟 بنك الأسئلة الشاملة واستبعاد السؤال الحالي
                         all_suggested_buttons = [
                             {"content_type": "text", "title": "المنهج والأنشطة 🎨", "payload": "المنهج بتاعكم إيه؟"},
                             {"content_type": "text", "title": "المصاريف 💰", "payload": "المصاريف كام؟"},
@@ -71,7 +70,9 @@ async def process_and_reply(sender_id: str, message_text: str):
                             {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
                             {"content_type": "text", "title": "سن القبول 👶", "payload": "بتاخدوا من سن كام؟"},
                             {"content_type": "text", "title": "مكانكم فين؟ 📍", "payload": "مكان الحضانة فين؟"},
-                            {"content_type": "text", "title": "الوجبات 🍽️", "payload": "الوجبات كام؟"}
+                            {"content_type": "text", "title": "الوجبات 🍽️", "payload": "الوجبات كام؟"}،
+                            {"content_type": "text", "title": "الباص ", "payload": "  الباص متاح؟"},
+
 
                         ]
 
@@ -82,7 +83,6 @@ async def process_and_reply(sender_id: str, message_text: str):
 
                         dynamic_buttons = random.sample(filtered_buttons, 3)
 
-                        # إرسال رد الموديل ومرفق معاه الأزرار المتغيرة
                         await send_fb_message(sender_id, bot_reply, quick_replies=dynamic_buttons)
 
                         # Update conversation history
