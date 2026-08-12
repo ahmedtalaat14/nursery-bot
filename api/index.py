@@ -1,16 +1,22 @@
+import json
 import os
 import httpx
 from fastapi import FastAPI, Request, Response, Query
 from dotenv import load_dotenv
+from upstash_redis import Redis
 
 load_dotenv()
 
 app = FastAPI()
-
 PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN", "")
 VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "nursery123")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+
+redis = Redis(
+    url=os.environ.get("UPSTASH_REDIS_REST_URL", ""),
+    token=os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
+)
 
 
 async def send_fb_message(sender_id: str, text: str):
@@ -41,11 +47,20 @@ async def send_fb_message(sender_id: str, text: str):
 async def process_and_reply(sender_id: str, message_text: str):
     if not GROQ_API_KEY:
         print("❌ GROQ_API_KEY missing!")
-        await send_fb_message(
-            sender_id,
-            "أهلاً بحضرتك! 🌟 الخدمة قيد التحديث حالياً، يرجى التواصل مع إدارة الحضانة مباشرة لمساعدتك."
-        )
         return
+
+    # 1. جلب تاريخ المحادثة من Redis
+    history_key = f"chat_{sender_id}"
+    user_history_str = redis.get(history_key)
+    
+    if user_history_str:
+        try:
+            # لو في تاريخ، بنحوله لـ List
+            messages = json.loads(user_history_str)
+        except:
+            messages = []
+    else:
+        messages = []
 
     system_prompt = """
 You are the warm, natural, and helpful Egyptian customer service assistant for "Adam's & Elbaraa Nursery" (حضانة آدمز والبراء).
@@ -53,21 +68,17 @@ You are the warm, natural, and helpful Egyptian customer service assistant for "
 =========================================
 CRITICAL OUTPUT & LANGUAGE RULES:
 =========================================
-1. STRICT EGYPTIAN DIALECT: You MUST reply ONLY in warm, natural Egyptian Colloquial Arabic (العامية المصرية الراقية). NEVER use Modern Standard Arabic (الفصحى) or literal translation phrasing.
-   - Use: "إحنا", "يا فندم", "حضرتك", "عشان", "أكيد", "تحت أمرك", "مافيش مشكلة".
-   - NEVER use: "عزيزي", "بناءً على ذلك", "فيما يلي", "بالتأكيد عزيزي", "وفقاً لـ".
-2. STRICT BREVITY (NO INFO-DUMPING):
-   - Maximum 2 to 3 short sentences per reply.
-   - Answer ONLY the specific question asked. Do NOT dump extra policies, reasons, or fee breakdowns unless explicitly asked.
-   - If asked a general question (e.g., "نظام الحضانة إيه"), give a 2-sentence summary and ask what specific detail they want.
-3. FIRM BUT POLITE REFUSALS: For rules marked NO/NOT ALLOWED, refuse politely but firmly (e.g., "بعتذر لحضرتك جداً يا فندم، بس نظام الحضانة بيمنع...").
-4. EXACT MANDATORY PHRASES (MUST USE WHEN TOPIC IS MENTIONED):
+1. STRICT EGYPTIAN DIALECT: You MUST reply ONLY in warm, natural Egyptian Colloquial Arabic (العامية المصرية الراقية). NEVER use Modern Standard Arabic (الفصحى).
+   - Use: "إحنا", "يا فندم", "حضرتك", "عشان", "أكيد".
+2. STRICT BREVITY: Maximum 2 to 3 short sentences per reply. Answer ONLY the specific question asked without extra dumping.
+3. FIRM BUT POLITE REFUSALS: For rules marked NO/NOT ALLOWED, refuse politely but firmly.
+4. NO BOOKING OFFERS (CRITICAL): You CANNOT book, schedule, or reserve appointments for the user. NEVER ask questions like "تحب نحدد معاد؟" or "اساعدك في الحجز؟". ALWAYS direct them to book independently through the website.
+5. EXACT MANDATORY PHRASES:
    - Teachers: "إحنا عندنا مدرسين متخصصين ومدربين على أعلى مستوى يا فندم."
    - Holidays Reason: "عشان الحضانة شغالة ١٢ شهر متواصل، فبندي أسبوع إجازة في العيدين عشان ندي فرصة للعاملات يسافروا يعيدوا مع أسرهم في محافظاتهم."
    - Required Documents: "شهادة ميلاد كمبيوتر، ٣ صور شخصية للطفل، وصور البطاقة الشخصية للأب والأم."
-   - City Club: "لأعضاء سيتي كلوب."
-   - Food/Meals & Allergies: ALWAYS reply exactly like this: "إحنا بنقدم ٣ وجبات صحية يومياً، وبينزل منيو شهري بالأكل على أبلكيشن (i care). لو الطفل عنده حساسية من أكل معين، حضرتك بتبلغينا، ولما تلاقي الأكل ده في المنيو في يوم معين، بتستأذنك تبعتي وجبة بديلة معاه في اليوم ده يا فندم."
-   - Curriculum/Visit Invitation: When answering questions about the curriculum, activities, or general system, ALWAYS append this exact sentence at the end: "زيارة حضرتك للمكان هتفرق كتير إننا نتعرف أكتر وتحس بارتياح يا فندم."
+   - Food/Meals & Allergies: "إحنا بنقدم ٣ وجبات صحية يومياً، وبينزل منيو شهري بالأكل على أبلكيشن (i care). لو الطفل عنده حساسية من أكل معين، حضرتك بتبلغينا، ولما تلاقي الأكل ده في المنيو في يوم معين، بتستأذنك تبعتي وجبة بديلة معاه في اليوم ده يا فندم."
+   - Curriculum/Visit Invitation: When answering about curriculum, ALWAYS append: "زيارة حضرتك للمكان هتفرق كتير إننا نتعرف أكتر وتحس بارتياح يا فندم."
 
 =========================================
 FEW-SHOT EXAMPLES (FOLLOW THIS EXACT STYLE):
@@ -152,12 +163,13 @@ NURSERY KNOWLEDGE BASE:
 """
 
 
+    groq_messages = [{"role": "system", "content": system_prompt}]
+    groq_messages.extend(messages)
+    groq_messages.append({"role": "user", "content": message_text})
+
     payload = {
         "model": GROQ_MODEL,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": message_text}
-        ],
+        "messages": groq_messages,
         "temperature": 0.3,
         "max_tokens": 500
     }
@@ -178,6 +190,17 @@ NURSERY KNOWLEDGE BASE:
                 res_json = response.json()
                 bot_reply = res_json['choices'][0]['message']['content']
                 await send_fb_message(sender_id, bot_reply)
+                
+                # 3. تحديث الذاكرة وحفظها في Redis
+                messages.append({"role": "user", "content": message_text})
+                messages.append({"role": "assistant", "content": bot_reply})
+                
+                # الاحتفاظ بآخر 6 رسائل فقط (3 أسئلة و 3 إجابات) لتوفير الـ Tokens
+                messages = messages[-6:]
+                
+                # حفظ في Redis مع انتهاء صلاحية بعد 24 ساعة (86400 ثانية)
+                redis.set(history_key, json.dumps(messages), ex=86400)
+                
             else:
                 print(f"❌ Groq Error ({response.status_code}): {response.text}")
         except Exception as e:
