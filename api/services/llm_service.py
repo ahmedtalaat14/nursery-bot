@@ -70,7 +70,9 @@ async def process_and_reply(sender_id: str, message_text: str):
                             {"content_type": "text", "title": "مواعيد الزيارة 📅", "payload": "ايه هي مواعيد الزيارة؟"},
                             {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
                             {"content_type": "text", "title": "سن القبول 👶", "payload": "بتاخدوا من سن كام؟"},
-                            {"content_type": "text", "title": "مكانكم فين؟ 📍", "payload": "مكان الحضانة فين؟"}
+                            {"content_type": "text", "title": "مكانكم فين؟ 📍", "payload": "مكان الحضانة فين؟"},
+                            {"content_type": "text", "title": "الوجبات 🍽️", "payload": "الوجبات كام؟"}
+
                         ]
 
                         filtered_buttons = [
