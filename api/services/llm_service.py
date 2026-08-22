@@ -16,7 +16,7 @@ async def process_and_reply(sender_id: str, message_text: str):
     # 🌟 Intercept Get Started / Initial greeting and send quick reply buttons
     clean_msg = message_text.strip().lower()
     if clean_msg in ["get started", "get_started_payload", "بدء الاستخدام"]:
-        welcome_text = "أهلاً بحضرتك في حضانة آدمز والبراء 🌟 انا المساعد اللشخصي اللذكي انا هنا عشان اساعدك تعرف كل التفاصيل عن الحضانة، من مواعيد العمل، المصاريف، المنهج، ومواعيد الزيارة. إزاي أقدر أساعدك النهاردة يا فندم؟"
+        welcome_text = "أهلاً بحضرتك في حضانة آدمز والبراء 🌟 انا المساعد الشخصي الذكي انا هنا عشان اساعدك تعرف كل التفاصيل عن الحضانة، من مواعيد العمل، المصاريف، المنهج، ومواعيد الزيارة. إزاي أقدر أساعدك النهاردة يا فندم؟"
 
         buttons = [
             {"content_type": "text", "title": "مواعيد العمل 🕒", "payload": "عايز اعرف مواعيد العمل"},
