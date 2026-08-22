@@ -41,8 +41,8 @@ async def process_and_reply(sender_id: str, message_text: str):
     payload = {
         "model": GROQ_MODEL,
         "messages": groq_messages,
-        "temperature": 0.1,
-        "max_tokens": 400
+        "temperature": 0.4,
+        "max_tokens": 600
     }
 
     headers = {
