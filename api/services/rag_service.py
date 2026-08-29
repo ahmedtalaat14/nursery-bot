@@ -9,53 +9,49 @@ to the user's detected intent. This keeps prompts focused and reduces noise.
 KNOWLEDGE_BASE: dict[str, str] = {
     "general": """
 [General Info & Working Hours]
-- Experience & Age: 16 years experience. Accepts kids from 1 year and 10 months up to 5 years.
+- Experience & Age: Accepts kids from 1 year and 10 months up to 5 years old.
 - Teachers: Highly qualified and trained staff.
 - Garden & Play Area: 200 square meters garden and play area.
 - Cameras: 24/7 CCTV coverage for safety (internal access only, no online access).
 - Working Days: Sunday to Thursday ONLY. (Friday & Saturday are off).
-- Working Hours: 8 AM to 4 PM.
-- Holidays: Closed on public holidays. 1 week off for Eid Al-Fitr and 1 week off for Eid Al-Adha.
-- Location: Obour City. Map: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8 | Website: https://adams-rouge.vercel.app
-- Summer Camp: Available for older kids (5 to 12 years old).
+- Working Hours: 8 AM to 3 PM. Child pickup is from 3 PM to 4 PM.
+- Extra Time: Available until 6 PM in summer, and until 7 PM during school season (extra fees apply after 4 PM).
+- Location: El Obour, First District, Halim Station, Villa 8, behind Makhlouf Mosque. Map: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8 | Website: https://adams-rouge.vercel.app
+- Phone for inquiries: 01111299025
 """,
-
     "pricing": """
 [Financials & Fees]
-- Monthly Subscriptions: Half Day (8 AM-12 PM) = 4500 EGP. Full Day (8 AM-4 PM) = 6000 EGP.
+- Monthly Subscriptions: 
+  * Full Month = 6000 EGP (Includes Breakfast, Lunch, Snack).
+  * Half Day (8 AM - 12 PM) = 5000 EGP (Includes Breakfast only).
+- Application fees: 300 EGP.
+- Uniform: Mandatory. Summer Uniform = 800 EGP | Winter Uniform = 1200 EGP.
 - Discounts: 10% for City Club members. 5% sibling discount.
 - Payment Methods: Cash or InstaPay.
-- Late Fees: After 4 PM → 50 EGP for 1 hour delay, 150 EGP for 2 hours.
 - Absence: No refund or compensation for days missed.
-- Refund Policy: If child withdraws early → app fee (300 EGP) + uniform cost + attended days are deducted, rest is refunded.
-- Uniform: Mandatory. Bought directly from the nursery.
+- Refund Policy: If child withdraws early -> app fee (300 EGP) + uniform cost + attended days are deducted, rest is refunded.
 """,
-
     "food": """
 [Food & Meals Policy]
-- Meals: 3 healthy meals provided daily. Monthly menu posted on "i care" app.
+- Meals: Full month subscription includes 3 healthy meals (Breakfast, Lunch, Snack). Half-day includes Breakfast only. Monthly menu posted on "i care" app.
 - Outside Food: NOT ALLOWED to bring full meals from home. Only healthy snacks (vegetables/fruits). No chips or chocolates.
-- Allergies: Parent notifies management → sends replacement meal ONLY on the specific day that food appears in the menu.
+- Allergies: Parent notifies management -> sends replacement meal ONLY on the specific day that food appears in the menu.
 """,
-
     "curriculum": """
 [Education & Activities]
-- Curriculum: Certified "Jolly Phonics" international program + Custom Character Building curriculum + English conversation.
-- Daily Activities: Quran memorization, Montessori, Gymnastics, Lego.
+- Curriculum & Subjects: Quran, Hadith & Duas, Arabic, Math, Certified "Jolly Phonics", Montessori, Character Building Curriculum, English conversation.
+- Daily Activities: Circle Time, Art, Fitness, Gymnastics, Lego, and Fun Activities.
 - Screens: ZERO screen time.
 - Languages: English only. No French or German.
 - Sports Outfit: Not needed; uniform is sufficient.
 - School Interviews: Kids prepared for National & International school interviews.
-- Certificates: NO official graduation certificate provided.
 """,
-
     "health": """
 [Health, Safety & Emergencies]
 - Illness: Sick kids with fever/contagious illness are STRICTLY forbidden from entering. Medical report required to return.
 - Medications: Given with parent's prior written instructions only.
 - Injuries: Immediate transfer to nearest hospital + immediate parent notification.
 """,
-
     "care": """
 [Daily Care & Routine]
 - Nap Time: Only for 2-year-olds, supervised by class teachers.
@@ -63,22 +59,20 @@ KNOWLEDGE_BASE: dict[str, str] = {
 - Potty Training: Coordinated step-by-step with management.
 - First Day Transition: "Safe separation" program over one week, coordinated with parents.
 """,
-
     "behavior": """
 [Behavior & Special Needs]
+- Specialists: Behavior Modification Specialist Available on-site.
 - Special Needs: Does NOT accept Autism, ADHD, or Speech delay cases.
 - Behavior Issues: A behavior modification program is set with parents (e.g., biting, hitting).
 """,
-
     "communication": """
 [Communication, App & Bus]
 - App (i care): Used for daily reports and monthly evaluations.
-- Visit Booking: Available Sunday, Monday, Thursday — 10 AM to 1 PM. Each visit is 45 minutes. Book via: https://adams-rouge.vercel.app
+- Visit Booking: Available Sunday, Monday, Thursday -> 10 AM to 1 PM. Each visit is 45 minutes. Book via website.
 - Parent Meetings: With MANAGEMENT ONLY. Direct contact with teachers is strictly forbidden.
-- Birthdays: NOT allowed to celebrate or distribute sweets.
-- Bus: Covers all Obour City. Starts from 1000 EGP/month (paid separately). Matron on board, direct contact provided.
+- Bus: Available all over El Obour. Fees vary depending on the area. Matron on board, direct contact provided.
 - Emergency Pickup: Parent MUST notify management and send recipient's National ID photo via WhatsApp in advance.
-""",
+"""
 }
 
 # ─── Intent → Relevant Sections Mapping ──────────────────────────────────────
