@@ -18,6 +18,7 @@ KNOWLEDGE_BASE: dict[str, str] = {
 - Extra Time: Available until 6 PM in summer, and until 7 PM during school season (extra fees apply after 4 PM).
 - Location: El Obour, First District, Halim Station, Villa 8, behind Makhlouf Mosque. Map: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8 | Website: https://adams-rouge.vercel.app
 - Phone for inquiries: 01111299025
+- Drop-in/Daily Hosting: STRICTLY NOT ALLOWED. The nursery does not offer one-day hosting or daily drop-ins (لا يوجد استضافة باليوم). Subscription is monthly only.
 """,
     "pricing": """
 [Financials & Fees]
@@ -68,7 +69,7 @@ KNOWLEDGE_BASE: dict[str, str] = {
     "communication": """
 [Communication, App & Bus]
 - App (i care): Used for daily reports and monthly evaluations.
-- Visit Booking: Available Sunday, Monday, Thursday -> 10 AM to 1 PM. Each visit is 45 minutes. Book via website.
+- Visit Booking: Available Sunday, Monday, Thursday -> 10 AM to 1 PM. Each visit is 45 minutes. Book via website :https://adams-rouge.vercel.app/book-a-visit.
 - Parent Meetings: With MANAGEMENT ONLY. Direct contact with teachers is strictly forbidden.
 - Bus: Available all over El Obour. Fees vary depending on the area. Matron on board, direct contact provided.
 - Emergency Pickup: Parent MUST notify management and send recipient's National ID photo via WhatsApp in advance.
