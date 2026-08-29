@@ -23,7 +23,8 @@ Classify the user message into EXACTLY ONE intent from this list:
 - health        → illness, fever, sick child, injury, medication, safety, first aid
 - care          → nap, potty training, daily bag, diapers, first day, transition, separation
 - behavior      → special needs, autism, ADHD, speech delay, biting, hitting, behavior modification
-- communication → app, i care app, parent meetings, bus, birthday, emergency pickup, cameras, contact
+- communication → app, i care app, parent meetings, birthday, emergency pickup, cameras, contact
+- bus          → school bus, transportation, bus fees, matron, bus availability
 - visit         → visit booking, appointment, when to visit, schedule a visit
 - general       → anything that does not clearly fit the above
 

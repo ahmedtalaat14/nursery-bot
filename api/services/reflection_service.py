@@ -9,6 +9,8 @@ import httpx
 from api.config import GROQ_API_KEY
 
 # Use the faster model for reflection — it's a simpler verification task
+REFLECTION_MODEL = "llama-3.1-8b-instant"
+
 REFLECTION_SYSTEM_PROMPT = """\
 You are a strict quality checker for a nursery chatbot reply. You will be given:
 1. CONTEXT: The only allowed facts
@@ -101,3 +103,4 @@ Now apply the 3 rules and respond with PASS or FAIL + correction.
 
     # Fail-safe: always return original if anything goes wrong
     return answer
+
