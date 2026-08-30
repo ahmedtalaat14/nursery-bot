@@ -9,6 +9,36 @@ from api.services.rag_service import retrieve_context
 from api.services.reflection_service import reflect_and_validate
 
 
+# The bot uses this fallback when the requested information is not available
+# in the nursery knowledge base. Keep the wording stable so the user always
+# knows how to reach the administration.
+UNKNOWN_INFO_PHRASES = (
+    "معندناش معلومات",
+    "معنديش معلومات",
+    "مش عندنا معلومات",
+    "مش عارف",
+    "مش متوفر",
+    "لا توجد معلومات",
+    "لا أعرف",
+    "don't have that information",
+    "do not have that information",
+    "not available",
+    "i don't know",
+)
+
+
+def is_unknown_info_reply(reply: str) -> bool:
+    """Detect whether the LLM is saying that the information is unavailable."""
+    normalized = reply.strip().lower()
+    return any(phrase in normalized for phrase in UNKNOWN_INFO_PHRASES)
+
+
+UNKNOWN_INFO_REPLY = (
+    "بعتذر لحضرتك، المعلومة دي مش متوفرة عندي حالياً. 🙏\n\n"
+    "• للتواصل مع إدارة الحضانة مباشرةً، تقدر تتصل على الرقم الموجود في الزر تحت 👇"
+)
+
+
 async def process_and_reply(sender_id: str, message_text: str):
     """
     Main pipeline:
@@ -51,7 +81,7 @@ async def process_and_reply(sender_id: str, message_text: str):
     context = retrieve_context(intent)
     print(f"📚 RAG: Retrieved context for intent='{intent}' ({len(context)} chars)")
 
-    # ── Step 3: Build focused system prompt & call main LLM ───────────────────
+    # ── Step 3: Build focused system prompt & call main LLM ────────────────────
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(context=context)
     messages = get_user_history(sender_id)
 
@@ -88,6 +118,18 @@ async def process_and_reply(sender_id: str, message_text: str):
                     if bot_reply:
                         # ── Step 4: Self-Reflection ───────────────────────────
                         bot_reply = await reflect_and_validate(message_text, bot_reply, context)
+
+                        # If the model/reflection says the information is not
+                        # available, do not mention the website as a source of
+                        # more details. Give the user a direct call button.
+                        if is_unknown_info_reply(bot_reply):
+                            bot_reply = UNKNOWN_INFO_REPLY
+                            await send_fb_message(sender_id, bot_reply, call_admin=True)
+
+                            messages.append({"role": "user", "content": message_text})
+                            messages.append({"role": "assistant", "content": bot_reply})
+                            save_user_history(sender_id, messages)
+                            return
 
                         # ── Step 5: Send with smart quick-reply buttons ────────
                         all_buttons = [
