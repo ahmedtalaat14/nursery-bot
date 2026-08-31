@@ -51,11 +51,11 @@ async def send_fb_message(
                         "type": "template",
                         "payload": {
                             "template_type": "button",
-                            "text": "للتواصل مع إدارة الحضانة مباشرةً 📞",
+                            "text": "📞",
                             "buttons": [
                                 {
                                     "type": "phone_number",
-                                    "title": "اتصل بإدارة الحضانة 📞",
+                                    "title": "📞",
                                     "payload": "+201111299025"
                                 }
                             ]
