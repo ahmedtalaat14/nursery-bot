@@ -5,6 +5,7 @@ quality checker. It verifies the answer is grounded, dialect-correct, and
 accurate — and optionally rewrites it if it fails any check.
 """
 
+import re
 import httpx
 from api.config import GROQ_API_KEY
 
@@ -22,17 +23,23 @@ RULE 1 - GROUNDED: Every fact MUST exist in the CONTEXT. No invented prices or r
 RULE 2 - LANGUAGE MATCHING: 
   - If the USER QUESTION is in English, the BOT ANSWER MUST be in English.
   - If the USER QUESTION is in Arabic, the BOT ANSWER MUST be in warm Egyptian Colloquial Arabic.
-RULE 3 - FORMAT & NAME: 
-  - The answer MUST be formatted as concise bullet points. No large blocks of text.
+RULE 3 - FORMAT & NAME:
+  - Multiple pieces of information MUST be concise bullet points. No large blocks of text.
+  - A short answer with one fact may be a normal sentence.
   - The nursery MUST be called "Adam's & Elbaraa Nursery" or "حضانة آدمز والبراء". NEVER use words like "الناصرة".
+
+Saying the nursery has NO daily hosting, or that the assistant is the nursery's smart assistant, is correct and grounded.
 
 If ALL 3 rules pass -> Reply with exactly: PASS
 If ANY rule fails -> Reply with: FAIL
 Then on the VERY NEXT LINE write a corrected answer that:
 - Matches the user's exact language.
-- Uses short bullet points (•).
+- Uses short bullet points (•) for multiple facts.
 - Uses the correct nursery name.
+- Keeps EVERY link (http...) from the original answer exactly as it is.
 """
+
+URL_RE = re.compile(r"https?://\S+")
 
 
 
@@ -92,6 +99,11 @@ Now apply the 3 rules and respond with PASS or FAIL + correction.
                     lines = reflection_text.split("\n", 1)
                     if len(lines) > 1 and lines[1].strip():
                         corrected = lines[1].strip()
+                        # The small model must never drop links (map, booking) from the answer.
+                        missing_urls = set(URL_RE.findall(answer)) - set(URL_RE.findall(corrected))
+                        if missing_urls:
+                            print(f"⚠️ Reflection: correction dropped links {missing_urls} — keeping original.")
+                            return answer
                         print("🔄 Reflection: FAIL — answer was corrected.")
                         return corrected
                     else:

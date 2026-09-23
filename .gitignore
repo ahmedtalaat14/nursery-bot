@@ -5,3 +5,4 @@ __pycache__/
 txt
 *.txt
 ragas_eval.py
+eval/output/

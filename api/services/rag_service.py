@@ -17,7 +17,7 @@ KNOWLEDGE_BASE: dict[str, str] = {
 - Working Hours: 8 AM to 3 PM. Child pickup is from 3 PM to 4 PM.
 - Extra Time: Available until 6 PM in summer, and until 7 PM during school season (extra fees apply after 4 PM).
 - Location: El Obour, First District, Halim Station, Villa 8, behind Makhlouf Mosque. Map: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8 | Website: https://www.adams-elbaraa-nursery.com
-- Phone for inquiries: 01111299025
+- Phone for inquiries: 01111299025 (available for calls AND WhatsApp).
 - Drop-in/Daily Hosting: STRICTLY NOT ALLOWED. The nursery does not offer one-day hosting or daily drop-ins (لا يوجد استضافة باليوم). Subscription is monthly only.
 """,
     "pricing": """
@@ -25,6 +25,7 @@ KNOWLEDGE_BASE: dict[str, str] = {
 - Monthly Subscriptions: 
   * Full Month = 6000 EGP (Includes Breakfast, Lunch, Snack).
   * Half Day (8 AM - 12 PM) = 5000 EGP (Includes Breakfast only).
+- Drop-in/Daily Hosting: NOT AVAILABLE. There is no one-day or per-day price (لا يوجد استضافة يومية). Subscription is monthly only.
 - Application fees: 300 EGP.
 - Uniform: Mandatory. Summer Uniform = 800 EGP | Winter Uniform = 1200 EGP.
 - Discounts: 10% for City Club members. 5% sibling discount.
@@ -69,7 +70,8 @@ KNOWLEDGE_BASE: dict[str, str] = {
     "communication": """
 [Communication, App & Bus]
 - App (i care): Used for daily reports and monthly evaluations.
-- Visit Booking: Available Sunday, Monday, Thursday -> 10 AM to 1 PM. Each visit is 45 minutes. Book via website :https://adams-rouge.vercel.app/book-a-visit.
+- Visit Booking: Available Sunday, Monday, Thursday -> 10 AM to 1 PM. Each visit is 45 minutes. Book via website: https://www.adams-elbaraa-nursery.com/book-a-visit
+- Enrollment / Applying for a child: Start by booking a visit through the website link above.
 - Parent Meetings: With MANAGEMENT ONLY. Direct contact with teachers is strictly forbidden.
 - Bus: Available all over El Obour. Fees vary depending on the area. Matron on board, direct contact provided.
 - Emergency Pickup: Parent MUST notify management and send recipient's National ID photo via WhatsApp in advance.
@@ -91,15 +93,22 @@ INTENT_TO_SECTIONS: dict[str, list[str]] = {
     "communication": ["communication"],
     "visit":         ["communication"],
     "bus":           ["communication", "pricing"],
+    "jobs":          [],
     "general":       list(KNOWLEDGE_BASE.keys()),  # Full KB for ambiguous queries
 }
 
 
-def retrieve_context(intent: str) -> str:
+def retrieve_context(intents: list[str]) -> str:
     """
-    Retrieve relevant KB sections based on the classified intent.
-    Falls back to the full KB for unknown intents.
+    Retrieve the union of KB sections for all detected intents.
+    The core "general" section (hours, age, phone, location, drop-in policy)
+    is always included, so short follow-up questions are never left without
+    the basic facts. Unknown intents fall back to the full KB.
     """
-    sections = INTENT_TO_SECTIONS.get(intent, list(KNOWLEDGE_BASE.keys()))
+    sections = ["general"]
+    for intent in intents:
+        for section in INTENT_TO_SECTIONS.get(intent, list(KNOWLEDGE_BASE.keys())):
+            if section not in sections:
+                sections.append(section)
     context_parts = [KNOWLEDGE_BASE[s] for s in sections if s in KNOWLEDGE_BASE]
     return "\n".join(context_parts).strip()

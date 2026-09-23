@@ -41,9 +41,11 @@ async def webhook(request: Request, background_tasks: BackgroundTasks):
                     if message_data.get('is_echo'):
                         continue
 
-                    message_text = message_data.get('text')
-                    if not message_text and message_data.get('quick_reply'):
-                        message_text = message_data['quick_reply'].get('payload')
+                    # For quick-reply buttons, the payload is the exact question/command.
+                    message_text = (
+                        (message_data.get('quick_reply') or {}).get('payload')
+                        or message_data.get('text')
+                    )
 
                     if message_text:
                         background_tasks.add_task(process_and_reply, sender_id, message_text)
