@@ -16,7 +16,7 @@ KNOWLEDGE_BASE: dict[str, str] = {
 - Working Days: Sunday to Thursday ONLY. (Friday & Saturday are off).
 - Working Hours: 8 AM to 3 PM. Child pickup is from 3 PM to 4 PM.
 - Extra Time: Available until 6 PM in summer, and until 7 PM during school season (extra fees apply after 4 PM).
-- Location: El Obour, First District, Halim Station, Villa 8, behind Makhlouf Mosque. Map: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8 | Website: https://adams-rouge.vercel.app
+- Location: El Obour, First District, Halim Station, Villa 8, behind Makhlouf Mosque. Map: https://maps.app.goo.gl/BCg3zuNPEEfaXjQp8 | Website: https://www.adams-elbaraa-nursery.com
 - Phone for inquiries: 01111299025
 - Drop-in/Daily Hosting: STRICTLY NOT ALLOWED. The nursery does not offer one-day hosting or daily drop-ins (لا يوجد استضافة باليوم). Subscription is monthly only.
 """,
